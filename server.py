@@ -56,8 +56,6 @@ def main():
         pass
 
     else:
-
-
         dir_socket.close()
 
         print("文件全部传输完成")
