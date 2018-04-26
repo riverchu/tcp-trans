@@ -1,36 +1,68 @@
 #!/usr/bin/env python3
 # coding:utf-8
 
-import socket
 import os
-import threading
+import socket
 import time
+# 定义全局列表用来存储子文件夹
+list1 = []
 
 
-def recv_data(files,dir_name,tcp_socket):
-    file_data = tcp_socket.recv(1024)
-    new_file = open(os.path.join(dir_name+"新", files),"wb")
+def deal_file(files,dir_name,dir_socket):
+    # 如果打开文件时报错即files为文件夹
+    try:
+        old_file = open(os.path.join(dir_name.decode(),files),"rb")
+    except:
+        # 讲导致报错的文件夹放入全局列表等待处理
+        global list1
+        list1.append(files)
+    else:
+        #　没有报错则执行读取发送关闭文件
+        file_data = old_file.read()
+        print("发送内容")
+        dir_socket.send(file_data)
 
-    new_file.write(file_data)
-    new_file.close()
-    print("文件%s下载完成" % files)
+        old_file.close()
+
+def deal_dir():
+    # 待完善用于处理子文件夹,需要利用递归完成
+    pass
+
+
 def main():
     # 创建套接字
     tcp_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
-    # 连接服务器
-    tcp_socket.connect(("192.168.11.128", 9992))
+    # 固定端口号
+    tcp_socket.bind(("",9992))
+    # 被动套接字转换为主动套接字
+    tcp_socket.listen(128)
+    # 将队列中的客户端取出
+    dir_socket,client_ip = tcp_socket.accept()
+    #　接受客户端消息
+    dir_name = dir_socket.recv(1024)
+    # 显示文件列表
+    file_list = os.listdir(dir_name.decode())
+    # 将文件列表发送至客户端
+    dir_socket.send(str(file_list).encode())
+    # 阻塞0.5s等待发送成功
+    time.sleep(0.5)
+    # 便利每个文件发送文件内容
+    for files in file_list:
+        deal_file(files, dir_name, dir_socket)
+    global list1
+    # 如果全局列表内有文件则
+    if list1:
+        # 带完善
+        pass
 
-    # 向服务器发送要拷贝的文件夹
-    dir_name = input("请输入要拷贝的文件夹")
-    tcp_socket.send(dir_name.encode())
-    # 新建文件夹
-    os.mkdir(dir_name+"新")
-    # 接受文件列表,循环打开文件写入
-    file_list = tcp_socket.recv(1024)
-    a = eval(file_list)
-    print(a)
-    for files in eval(file_list.decode()):
-        recv_data(files,dir_name,tcp_socket)
+    else:
+
+
+        dir_socket.close()
+
+        print("文件全部传输完成")
+        tcp_socket.close()
+
 
 
 if __name__ == '__main__':
