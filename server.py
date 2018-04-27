@@ -54,10 +54,8 @@ def main():
     if list1:
         # 带完善
         pass
-
     else:
         dir_socket.close()
-
         print("文件全部传输完成")
         tcp_socket.close()
 
