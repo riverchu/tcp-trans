@@ -19,7 +19,7 @@ def deal_file(files,dir_name,dir_socket):
     else:
         #　没有报错则执行读取发送关闭文件
         file_data = old_file.read()
-        print("发送内容")
+        print("Transporting...")
         dir_socket.send(file_data)
 
         old_file.close()
@@ -30,6 +30,8 @@ def deal_dir():
 
 
 def main():
+    print("Start server...")
+    print("Waiting client to connect...")
     # 创建套接字
     tcp_socket = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
     # 固定端口号
@@ -56,7 +58,7 @@ def main():
         pass
     else:
         dir_socket.close()
-        print("文件全部传输完成")
+        print("Finish transport...")
         tcp_socket.close()
 
 
