@@ -7,11 +7,10 @@ import time
 # 定义全局列表用来存储子文件夹
 list1 = []
 
-
 def deal_file(files,dir_name,dir_socket):
     # 如果打开文件时报错即files为文件夹
     try:
-        old_file = open(os.path.join(dir_name.decode(),files),"rb")
+        old_file = open(os.path.join(dir_name,files),"rb")
     except:
         # 讲导致报错的文件夹放入全局列表等待处理
         global list1
@@ -41,9 +40,18 @@ def main():
     # 将队列中的客户端取出
     dir_socket,client_ip = tcp_socket.accept()
     #　接受客户端消息
-    dir_name = dir_socket.recv(1024)
+    dir_name = dir_socket.recv(1024).decode()
+
+    print("Client require file:",dir_name)
+
     # 显示文件列表
-    file_list = os.listdir(dir_name.decode())
+    if dir_name.find(' ')!=-1:
+        file_list = dir_name.split(' ') #current dir
+        dir_name = '.'
+    else:
+        file_list = os.listdir(dir_name.decode())
+    print('file list:',file_list)
+
     # 将文件列表发送至客户端
     dir_socket.send(str(file_list).encode())
     # 阻塞0.5s等待发送成功
